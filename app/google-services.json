@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "846300722881",
+    "firebase_url": "https://eventos2020-fdd8a.firebaseio.com",
+    "project_id": "eventos2020-fdd8a",
+    "storage_bucket": "eventos2020-fdd8a.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:846300722881:android:df1130176c5b677ff90640",
+        "android_client_info": {
+          "package_name": "com.carlosmape.eventos"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "846300722881-m4peltsspnc6sujb2gohja4rfa8o0kdi.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.carlosmape.eventos",
+            "certificate_hash": "f2a0d0a2086fae219ea59b9289825c3d92f19ee5"
+          }
+        },
+        {
+          "client_id": "846300722881-042220m0dol1nb61sbnho2clpdp2h9r3.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB3AiuWgCo7VSNEOjlk-PTApjNpmcn5YDo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "846300722881-042220m0dol1nb61sbnho2clpdp2h9r3.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
