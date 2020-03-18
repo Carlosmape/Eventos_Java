@@ -21,7 +21,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.content_main);
+        setContentView(R.layout.activity_main);
         //createEvents();
         Query query = FirebaseFirestore.getInstance().collection(EVENTS).limit(50);
         FirestoreRecyclerOptions<Event> options = new FirestoreRecyclerOptions.Builder<Event>().setQuery(query, Event.class).build();
@@ -47,11 +47,24 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         Bundle extras = getIntent().getExtras();
-        if (getIntent().hasExtra("body")) {
+        if (extras != null && extras.keySet().size() > 7) {
+            String event = "";
+            event = "Evento: " + extras.getString("event") + "\n";
+            event = event + "Día: " + extras.getString("date") + "\n";
+            event = event + "Ciudad: " + extras.getString("cicty") + "\n";
+            event = event + "Comentario: " + extras.getString("comment");
+            mostrarDialogo(getApplicationContext(), event);
+            for (String key : extras.keySet()) {
+                getIntent().removeExtra(key);
+            }
+            extras = null;
+        } else if (getIntent().hasExtra("body")) {
             mostrarDialogo(this, extras.getString("title") + ": " + extras.getString("body"));
             extras.remove("body");
         }
+
     }
+
 
     public static MainActivity getCurrentContext() {
         return current;
