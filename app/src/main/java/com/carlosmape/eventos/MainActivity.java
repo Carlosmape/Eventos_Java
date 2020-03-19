@@ -10,6 +10,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -33,6 +34,19 @@ public class MainActivity extends AppCompatActivity {
         final RecyclerView recyclerView = findViewById(R.id.recyclerViewEvents);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(adapter);
+        adapter.setOnItemClickListener(new View.OnClickListener() {
+            @Override public
+            void onClick(View view) {
+                int position = recyclerView.getChildAdapterPosition(view);
+                Event currentItem = (Event) adapter.getItem(position);
+                String idEvento = adapter.getSnapshots().getSnapshot(position).getId();
+                Context context = getAppContext();
+                Intent intent = new Intent(context, EventoDetalles.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                intent.putExtra("evento", idEvento);
+                context.startActivity(intent);
+            }
+        });
 
         final SharedPreferences preferencias = getApplicationContext().getSharedPreferences("Temas", Context.MODE_PRIVATE);
         if (preferencias.getBoolean("Inicializado", false) == false) {
@@ -76,6 +90,10 @@ public class MainActivity extends AppCompatActivity {
             extras.remove("body");
         }
 
+    }
+
+    public static Context getAppContext() {
+        return MainActivity.getCurrentContext();
     }
 
     public static MainActivity getCurrentContext() {
