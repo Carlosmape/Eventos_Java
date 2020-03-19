@@ -4,7 +4,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -12,6 +14,7 @@ import android.view.MenuItem;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 import static com.carlosmape.eventos.EventsFirestore.EVENTS;
 
@@ -30,6 +33,15 @@ public class MainActivity extends AppCompatActivity {
         final RecyclerView recyclerView = findViewById(R.id.recyclerViewEvents);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(adapter);
+
+        final SharedPreferences preferencias = getApplicationContext().getSharedPreferences("Temas", Context.MODE_PRIVATE);
+        if (preferencias.getBoolean("Inicializado", false) == false) {
+            final SharedPreferences prefs = getApplicationContext().getSharedPreferences("Temas", Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.putBoolean("Inicializado", true);
+            editor.commit();
+            FirebaseMessaging.getInstance().subscribeToTopic("Todos");
+        }
     }
 
     @Override
