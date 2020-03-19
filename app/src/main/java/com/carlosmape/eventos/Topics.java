@@ -13,6 +13,8 @@ import com.google.firebase.messaging.FirebaseMessaging;
 
 import java.io.IOException;
 
+import static com.carlosmape.eventos.Common.eliminarIdRegistro;
+
 public class Topics extends AppCompatActivity {
     CheckBox checkBoxDeportes;
     CheckBox checkBoxTeatro;
@@ -70,6 +72,7 @@ public class Topics extends AppCompatActivity {
     private void mantenimientoSuscripcionesATemas(String tema, Boolean suscribir) {
         if (tema.equals("Todos")) {
             if (suscribir) {
+                eliminarIdRegistro(getApplicationContext());
                 FirebaseMessaging.getInstance().unsubscribeFromTopic(tema);
                 guardarSuscripcionATemaEnPreferencias(getApplicationContext(), tema, true);
                 checkBoxDeportes.setChecked(false);
@@ -79,7 +82,7 @@ public class Topics extends AppCompatActivity {
             } else {
                 FirebaseMessaging.getInstance().subscribeToTopic(tema);
                 try {
-                    Common.saveRegisterID(getApplicationContext(), FirebaseInstanceId.getInstance().getToken(FirebaseInstanceId.getInstance().getId().toString(), "FCM"));
+                    Common.saveRegisterID(getApplicationContext(), FirebaseInstanceId.getInstance().getToken(FirebaseInstanceId.getInstance().getId(), "FCM"));
                     guardarSuscripcionATemaEnPreferencias(getApplicationContext(), tema, false);
                 } catch (IOException e) {
                     e.printStackTrace();
