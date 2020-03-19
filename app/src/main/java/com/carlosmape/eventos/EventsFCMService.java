@@ -1,11 +1,10 @@
 package com.carlosmape.eventos;
 
-import android.app.Service;
-
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
-import static com.carlosmape.eventos.Common.mostrarDialogo;
+import static com.carlosmape.eventos.Common.saveRegisterID;
+import static com.carlosmape.eventos.Common.showDialog;
 
 public class EventsFCMService extends FirebaseMessagingService {
     @Override
@@ -17,12 +16,19 @@ public class EventsFCMService extends FirebaseMessagingService {
                 evento = evento + "Día: " + remoteMessage.getData().get("dia") + "\n";
                 evento = evento + "Ciudad: " + remoteMessage.getData().get("ciudad") + "\n";
                 evento = evento + "Comentario: " + remoteMessage.getData().get("comentario");
-                mostrarDialogo(getApplicationContext(), evento);
+                showDialog(getApplicationContext(), evento);
             } else {
                 if (remoteMessage.getNotification() != null) {
-                    mostrarDialogo(getApplicationContext(), remoteMessage.getNotification().getTitle() + ": " + remoteMessage.getNotification().getBody());
+                    showDialog(getApplicationContext(), remoteMessage.getNotification().getTitle() + ": " + remoteMessage.getNotification().getBody());
                 }
             }
         }
+    }
+
+    @Override
+    public void onNewToken(String s) {
+        super.onNewToken(s);
+        String idPush = s;
+        saveRegisterID(getApplicationContext(), idPush);
     }
 }

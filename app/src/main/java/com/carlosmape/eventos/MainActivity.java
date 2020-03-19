@@ -10,9 +10,7 @@ import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 
-import static com.carlosmape.eventos.Common.mostrarDialogo;
 import static com.carlosmape.eventos.EventsFirestore.EVENTS;
-import static com.carlosmape.eventos.EventsFirestore.createEvents;
 
 public class MainActivity extends AppCompatActivity {
     private EventsAdapter adapter;
@@ -53,13 +51,13 @@ public class MainActivity extends AppCompatActivity {
             event = event + "Día: " + extras.getString("date") + "\n";
             event = event + "Ciudad: " + extras.getString("cicty") + "\n";
             event = event + "Comentario: " + extras.getString("comment");
-            mostrarDialogo(getApplicationContext(), event);
+            Common.showDialog(getApplicationContext(), event);
             for (String key : extras.keySet()) {
                 getIntent().removeExtra(key);
             }
             extras = null;
         } else if (getIntent().hasExtra("body")) {
-            mostrarDialogo(this, extras.getString("title") + ": " + extras.getString("body"));
+            Common.showDialog(this, extras.getString("title") + ": " + extras.getString("body"));
             extras.remove("body");
         }
 
