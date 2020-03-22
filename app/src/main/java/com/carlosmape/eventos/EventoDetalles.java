@@ -35,15 +35,15 @@ public class EventoDetalles extends AppCompatActivity {
         Bundle extras = getIntent().getExtras();
         evento = extras.getString("evento");
         if (evento == null) evento = "";
-        registros = FirebaseFirestore.getInstance().collection("eventos");
+        registros = FirebaseFirestore.getInstance().collection("events");
         registros.document(evento).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                 if (task.isSuccessful()) {
-                    txtEvento.setText(task.getResult().get("evento").toString());
-                    txtCiudad.setText(task.getResult().get("ciudad").toString());
-                    txtFecha.setText(task.getResult().get("fecha").toString());
-                    new DownloadImageTask((ImageView) imgImagen).execute(task.getResult().get("imagen").toString());
+                    txtEvento.setText(task.getResult().get("event").toString());
+                    txtCiudad.setText(task.getResult().get("city").toString());
+                    txtFecha.setText(task.getResult().get("date").toString());
+                    new DownloadImageTask((ImageView) imgImagen).execute(task.getResult().get("image").toString());
                 }
             }
         });

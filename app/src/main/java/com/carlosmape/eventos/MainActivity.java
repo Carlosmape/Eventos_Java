@@ -40,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
                 int position = recyclerView.getChildAdapterPosition(view);
                 Event currentItem = (Event) adapter.getItem(position);
                 String idEvento = adapter.getSnapshots().getSnapshot(position).getId();
-                Context context = getAppContext();
+                Context context = view.getContext();
                 Intent intent = new Intent(context, EventoDetalles.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 intent.putExtra("evento", idEvento);
