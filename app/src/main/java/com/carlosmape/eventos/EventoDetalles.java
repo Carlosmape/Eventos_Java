@@ -11,6 +11,7 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -29,6 +30,7 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.SetOptions;
+import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnPausedListener;
 import com.google.firebase.storage.OnProgressListener;
@@ -130,6 +132,9 @@ public class EventoDetalles extends AppCompatActivity {
                 break;
             case R.id.action_putFile:
                 seleccionarFotografiaDispositivo(vista, SOLICITUD_SELECCION_PUTFILE);
+                break;
+            case R.id.action_getFile:
+                descargarDeFirebaseStorage(evento);
                 break;
         }
         return super.onOptionsItemSelected(item);
@@ -302,8 +307,8 @@ public class EventoDetalles extends AppCompatActivity {
 
     private void upload_exito(UploadTask.TaskSnapshot taskSnapshot) {
         imagenRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-            @Override public
-            void onSuccess(Uri uri) {
+            @Override
+            public void onSuccess(Uri uri) {
                 Uri downloadUrl = uri;
                 Map<String, Object> datos = new HashMap<>();
                 datos.put("imagen", uri.toString());
@@ -326,8 +331,8 @@ public class EventoDetalles extends AppCompatActivity {
             progresoSubida.setCancelable(true);
             progresoSubida.setCanceledOnTouchOutside(false);
             progresoSubida.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancelar", new DialogInterface.OnClickListener() {
-                @Override public
-                void onClick(DialogInterface dialog, int which) {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
                     uploadTask.cancel();
                 }
             });
@@ -342,6 +347,26 @@ public class EventoDetalles extends AppCompatActivity {
     private void upload_pausa(UploadTask.TaskSnapshot taskSnapshot) {
         subiendoDatos = false;
         Common.showDialog(getApplicationContext(), "La subida ha sido pausada.");
+    }
+
+    public void descargarDeFirebaseStorage(String fichero) {
+        StorageReference referenciaFichero = Common.storageRef.child(fichero);
+        File rootPath = new File(Environment.getExternalStorageDirectory(), "Eventos");
+        if (!rootPath.exists()) {
+            rootPath.mkdirs();
+        }
+        final File localFile = new File(rootPath, evento + ".jpg");
+        referenciaFichero.getFile(localFile).addOnSuccessListener(new OnSuccessListener <FileDownloadTask.TaskSnapshot > ()
+        {
+            @Override public void onSuccess (FileDownloadTask.TaskSnapshot taskSnapshot){
+            Common.showDialog(getApplicationContext(), "Fichero descargado con éxito: " + localFile.toString());
+        }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override public
+            void onFailure(@NonNull Exception exception) {
+                Common.showDialog(getApplicationContext(), "Error al descargar el fichero.");
+            }
+        });
     }
 }
 
