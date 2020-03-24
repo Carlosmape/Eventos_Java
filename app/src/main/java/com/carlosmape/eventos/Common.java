@@ -11,6 +11,8 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.iid.InstanceIdResult;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -20,6 +22,8 @@ import java.net.URL;
 public class Common {
     static final String SERVER_URL = "http://curso-firebase.000webhostapp.com/";
     static String PROJECT_ID = "eventos2020-fdd8a";
+    public static FirebaseStorage storage;
+    public static StorageReference storageRef;
 
     String registerId = "";
 
@@ -78,8 +82,8 @@ public class Common {
 
     public static void eliminarIdRegistro(final Context context) {
         FirebaseInstanceId.getInstance().getInstanceId().addOnCompleteListener(new OnCompleteListener<InstanceIdResult>() {
-            @Override public
-            void onComplete(@NonNull Task<InstanceIdResult> task) {
+            @Override
+            public void onComplete(@NonNull Task<InstanceIdResult> task) {
                 if (task.isSuccessful()) {
                     desregistrarDispositivoEnServidorWebTask tarea = new desregistrarDispositivoEnServidorWebTask();
                     tarea.contexto = context;
@@ -99,8 +103,8 @@ public class Common {
             super.onPreExecute();
         }
 
-        @Override protected
-        String doInBackground(Void... arg0) {
+        @Override
+        protected String doInBackground(Void... arg0) {
             try {
                 Uri.Builder constructorParametros = new Uri.Builder().appendQueryParameter("iddevice", idRegistroTarea).appendQueryParameter("idapp", PROJECT_ID);
                 String parametros = constructorParametros.build().getEncodedQuery();

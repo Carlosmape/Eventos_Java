@@ -1,21 +1,25 @@
 package com.carlosmape.eventos;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Toast;
 
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.messaging.FirebaseMessaging;
+import com.google.firebase.storage.FirebaseStorage;
 
 import static com.carlosmape.eventos.EventsFirestore.EVENTS;
 
@@ -35,8 +39,8 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(adapter);
         adapter.setOnItemClickListener(new View.OnClickListener() {
-            @Override public
-            void onClick(View view) {
+            @Override
+            public void onClick(View view) {
                 int position = recyclerView.getChildAdapterPosition(view);
                 Event currentItem = (Event) adapter.getItem(position);
                 String idEvento = adapter.getSnapshots().getSnapshot(position).getId();
@@ -56,6 +60,12 @@ public class MainActivity extends AppCompatActivity {
             editor.commit();
             FirebaseMessaging.getInstance().subscribeToTopic("Todos");
         }
+
+        Common.storage = FirebaseStorage.getInstance();
+        Common.storageRef = Common.storage.getReferenceFromUrl("gs://eventos2020-fdd8a.appspot.com");
+
+        String[] PERMISOS = {android.Manifest.permission.WRITE_EXTERNAL_STORAGE};
+        ActivityCompat.requestPermissions(this, PERMISOS, 1);
     }
 
     @Override
@@ -115,5 +125,17 @@ public class MainActivity extends AppCompatActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case 1: {
+                if (!(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                    Toast.makeText(MainActivity.this, "Has denegado algún permiso de la aplicación.", Toast.LENGTH_SHORT).show();
+                }
+                return;
+            }
+        }
     }
 }
