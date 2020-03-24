@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -28,6 +29,7 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.SetOptions;
+import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnPausedListener;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
@@ -39,6 +41,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class EventoDetalles extends AppCompatActivity {
@@ -247,6 +250,98 @@ public class EventoDetalles extends AppCompatActivity {
                 IOException e) {
             Common.showDialog(getApplicationContext(), e.toString());
         }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if (imagenRef != null) {
+            outState.putString("EXTRA_STORAGE_REFERENCE_KEY", imagenRef.toString());
+        }
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        final String stringRef = savedInstanceState.getString("EXTRA_STORAGE_REFERENCE_KEY");
+        if (stringRef == null) {
+            return;
+        }
+        imagenRef = FirebaseStorage.getInstance().getReferenceFromUrl(stringRef);
+        List<UploadTask> tasks = imagenRef.getActiveUploadTasks();
+        for (UploadTask task : tasks) {
+            task.addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception exception) {
+                    upload_error(exception);
+                }
+            }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                    upload_exito(taskSnapshot);
+                }
+            }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
+                    upload_progreso(taskSnapshot);
+                }
+            }).addOnPausedListener(new OnPausedListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onPaused(UploadTask.TaskSnapshot taskSnapshot) {
+                    upload_pausa(taskSnapshot);
+                }
+            });
+        }
+
+    }
+
+    private void upload_error(Exception exception) {
+        subiendoDatos = false;
+        Common.showDialog(getApplicationContext(), "Ha ocurrido un error al subir la imagen o el usuario ha cancelado la subida.");
+    }
+
+    private void upload_exito(UploadTask.TaskSnapshot taskSnapshot) {
+        imagenRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+            @Override public
+            void onSuccess(Uri uri) {
+                Uri downloadUrl = uri;
+                Map<String, Object> datos = new HashMap<>();
+                datos.put("imagen", uri.toString());
+                FirebaseFirestore.getInstance().collection("eventos").document(evento).set(datos, SetOptions.merge());
+                new DownloadImageTask((ImageView) imgImagen).execute(uri.toString());
+                if (progresoSubida != null) {
+                    progresoSubida.dismiss();
+                }
+                subiendoDatos = false;
+                Common.showDialog(getApplicationContext(), "Imagen subida correctamente.");
+            }
+        });
+    }
+
+    private void upload_progreso(UploadTask.TaskSnapshot taskSnapshot) {
+        if (!subiendoDatos) {
+            progresoSubida = new ProgressDialog(EventoDetalles.this);
+            progresoSubida.setTitle("Subiendo...");
+            progresoSubida.setMessage("Espere...");
+            progresoSubida.setCancelable(true);
+            progresoSubida.setCanceledOnTouchOutside(false);
+            progresoSubida.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancelar", new DialogInterface.OnClickListener() {
+                @Override public
+                void onClick(DialogInterface dialog, int which) {
+                    uploadTask.cancel();
+                }
+            });
+            progresoSubida.show();
+            subiendoDatos = true;
+        } else {
+            if (taskSnapshot.getTotalByteCount() > 0)
+                progresoSubida.setMessage("Espere... " + String.valueOf(100 * taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount()) + "%");
+        }
+    }
+
+    private void upload_pausa(UploadTask.TaskSnapshot taskSnapshot) {
+        subiendoDatos = false;
+        Common.showDialog(getApplicationContext(), "La subida ha sido pausada.");
     }
 }
 
