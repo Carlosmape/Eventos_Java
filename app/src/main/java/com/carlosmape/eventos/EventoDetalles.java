@@ -1,6 +1,8 @@
 package com.carlosmape.eventos;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -19,10 +21,15 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.SetOptions;
+import com.google.firebase.storage.OnPausedListener;
+import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
@@ -31,6 +38,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 public class EventoDetalles extends AppCompatActivity {
     final int SOLICITUD_SUBIR_PUTDATA = 0;
@@ -46,6 +55,9 @@ public class EventoDetalles extends AppCompatActivity {
 
     static UploadTask uploadTask = null;
     StorageReference imagenRef;
+
+    private ProgressDialog progresoSubida;
+    Boolean subiendoDatos = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -157,6 +169,18 @@ public class EventoDetalles extends AppCompatActivity {
     }
 
     public void subirAFirebaseStorage(Integer opcion, String ficheroDispositivo) {
+        final ProgressDialog progresoSubida = new ProgressDialog(EventoDetalles.this);
+        progresoSubida.setTitle("Subiendo...");
+        progresoSubida.setMessage("Espere...");
+        progresoSubida.setCancelable(true);
+        progresoSubida.setCanceledOnTouchOutside(false);
+        progresoSubida.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancelar", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                uploadTask.cancel();
+            }
+        });
+
         String fichero = evento;
         imagenRef = Common.storageRef.child(fichero);
         try {
@@ -179,7 +203,48 @@ public class EventoDetalles extends AppCompatActivity {
                     uploadTask = imagenRef.putFile(file);
                     break;
             }
-        } catch (IOException e) {
+            uploadTask.addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception exception) {
+                    subiendoDatos = false;
+                    Common.showDialog(getApplicationContext(), "Ha ocurrido un error al subir la imagen o el usuario ha cancelado la subida.");
+                }
+            }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                    imagenRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                        @Override
+                        public void onSuccess(Uri uri) {
+                            Uri downloadUrl = uri;
+                            Map<String, Object> datos = new HashMap<>();
+                            datos.put("imagen", uri.toString());
+                            FirebaseFirestore.getInstance().collection("eventos").document(evento).set(datos, SetOptions.merge());
+                            new DownloadImageTask((ImageView) imgImagen).execute(uri.toString());
+                            progresoSubida.dismiss();
+                            subiendoDatos = false;
+                            Common.showDialog(getApplicationContext(), "Imagensubida correctamente.");
+                        }
+                    });
+                }
+            }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
+                    if (!subiendoDatos) {
+                        progresoSubida.show();
+                        subiendoDatos = true;
+                    } else {
+                        if (taskSnapshot.getTotalByteCount() > 0)
+                            progresoSubida.setMessage("Espere... " + String.valueOf(100 * taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount()) + "%");
+                    }
+                }
+            }).addOnPausedListener(new OnPausedListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onPaused(UploadTask.TaskSnapshot taskSnapshot) {
+                    //UploadTask pausa
+                }
+            });
+        } catch (
+                IOException e) {
             Common.showDialog(getApplicationContext(), e.toString());
         }
     }
