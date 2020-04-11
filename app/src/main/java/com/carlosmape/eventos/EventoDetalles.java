@@ -52,6 +52,7 @@ public class EventoDetalles extends AppCompatActivity {
     final int SOLICITUD_SUBIR_PUTFILE = 2;
     final int SOLICITUD_SELECCION_STREAM = 100;
     final int SOLICITUD_SELECCION_PUTFILE = 101;
+    final int SOLICITUD_FOTOGRAFIAS_DRIVE = 102;
 
     TextView txtEvento, txtFecha, txtCiudad;
     ImageView imgImagen;
@@ -135,6 +136,11 @@ public class EventoDetalles extends AppCompatActivity {
                 break;
             case R.id.action_getFile:
                 descargarDeFirebaseStorage(evento);
+                break;
+            case R.id.action_fotografiasDrive:
+                Intent intent = new Intent(getBaseContext(), FotografiasDrive.class);
+                intent.putExtra("evento", evento);
+                startActivity(intent);
                 break;
         }
         return super.onOptionsItemSelected(item);
@@ -356,14 +362,14 @@ public class EventoDetalles extends AppCompatActivity {
             rootPath.mkdirs();
         }
         final File localFile = new File(rootPath, evento + ".jpg");
-        referenciaFichero.getFile(localFile).addOnSuccessListener(new OnSuccessListener <FileDownloadTask.TaskSnapshot > ()
-        {
-            @Override public void onSuccess (FileDownloadTask.TaskSnapshot taskSnapshot){
-            Common.showDialog(getApplicationContext(), "Fichero descargado con éxito: " + localFile.toString());
-        }
+        referenciaFichero.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                Common.showDialog(getApplicationContext(), "Fichero descargado con éxito: " + localFile.toString());
+            }
         }).addOnFailureListener(new OnFailureListener() {
-            @Override public
-            void onFailure(@NonNull Exception exception) {
+            @Override
+            public void onFailure(@NonNull Exception exception) {
                 Common.showDialog(getApplicationContext(), "Error al descargar el fichero.");
             }
         });

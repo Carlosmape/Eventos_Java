@@ -64,7 +64,7 @@ public class MainActivity extends AppCompatActivity {
         Common.storage = FirebaseStorage.getInstance();
         Common.storageRef = Common.storage.getReferenceFromUrl("gs://eventos2020-fdd8a.appspot.com");
 
-        String[] PERMISOS = {android.Manifest.permission.WRITE_EXTERNAL_STORAGE};
+        String[] PERMISOS = {android.Manifest.permission.WRITE_EXTERNAL_STORAGE,android.Manifest.permission.GET_ACCOUNTS};
         ActivityCompat.requestPermissions(this, PERMISOS, 1);
     }
 
